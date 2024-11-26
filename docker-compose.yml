@@ -1,0 +1,111 @@
+version: '3.4'
+
+services:
+  projectbase:
+    image: ${DOCKER_REGISTRY-}projectbase
+    build:
+      context: .
+      dockerfile: ProjectBase/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - coffee.database
+      - localstack
+    networks:
+      - dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_ENVIRONMENT=Development
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+    volumes:
+      - ./ProjectBase/appsettings.json:/app/appsettings.json
+  
+  projectbase.jobs:
+    image: ${DOCKER_REGISTRY-}projectbase.jobs
+    build:
+      context: .
+      dockerfile: ProjectBase.Jobs/Dockerfile
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_ENVIRONMENT=Development
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+    depends_on:
+      - coffee.database
+      - localstack
+    networks:
+      - dev
+    volumes:
+      - ./ProjectBase.Jobs/appsettings.json:/app/appsettings.json
+
+  coffee.database:
+    image: postgres:latest
+    container_name: coffee.database
+    environment:
+      - POSTGRES_DB=StoreManageDB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mynnt4
+    volumes:
+      - coffee_volume:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    ports:
+      - "5432:5432"
+    networks:
+      - dev
+
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
+    hostname: localstack
+    image: localstack/localstack
+    ports:
+      - "4566:4566"  # LocalStack Gateway
+      - "4575:4575"  # Custom port for SNS
+      - "4576:4576"  # Custom port for SQS
+      - "4510-4559:4510-4559"  # ext services port range
+      - "53:53"  # DNS config
+      - "53:53/udp"  # DNS config
+      - "443:443"  # LocalStack HTTPS Gateway
+    environment:
+      - DEBUG=${DEBUG-}
+      - PERSISTENCE=${PERSISTENCE-}
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+      - AWS_DEFAULT_REGION=us-east-1
+      - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY-} 
+    networks:
+      - dev
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./setup-localstack.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      #- "./setup-localstack.sh:/docker-entrypoint-initaws.d/setup-localstack.sh"
+
+  # app:
+  #   image: openai-demo-app
+  #   build:
+  #     context: ../store-manage-fe/
+  #     # target: dev
+  #     dockerfile: ../store-manage-fe/Dockerfile
+  #   volumes:
+  #       - .:/fe
+  #       - /fe/node_modules
+  #       - /fe/.next
+  #   ports:
+  #     - "3000:3000"
+
+volumes:
+  coffee_volume:
+
+networks:
+  dev:
+    driver: bridge
+
+secrets:
+   use_secret:
+     file: ./secret.txt

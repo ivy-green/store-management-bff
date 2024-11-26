@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "postgresql1": {
+      "type": "postgresql",
+      "connectionId": "Server=localhost;Username=postgres;Database=StoreManageDB;Password=mynnt4",
+      "dynamicId": null
+    }
+  }
+}

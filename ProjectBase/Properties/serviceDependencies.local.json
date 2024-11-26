@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "postgresql1": {
+      "containerPorts": "5001:5432",
+      "secretStore": "LocalSecretsFile",
+      "containerName": "postgresql",
+      "containerImage": "postgres",
+      "type": "postgresql.container",
+      "connectionId": "Server=localhost;Username=postgres;Database=StoreManageDB;Password=mynnt4",
+      "dynamicId": null
+    }
+  }
+}

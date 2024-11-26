@@ -1,0 +1,5 @@
+{
+  "ContainerName": "coffee-data",
+  "SuccessMessageKey": "SuccessMessage",
+  "ErrorMessageKey":  "ErrorMessage"
+}

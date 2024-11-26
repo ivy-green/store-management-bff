@@ -1,0 +1,6 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=coffee.database;Port=5432;Database=StoreManageDB;Username=postgres;Password=mynnt4",
+    "DynamoConnection":  "DataSource=app.db"
+  }
+}
